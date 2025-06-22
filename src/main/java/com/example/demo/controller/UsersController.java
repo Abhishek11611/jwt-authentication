@@ -62,5 +62,29 @@ public class UsersController {
 		return response;
 
 	}
+	@PostMapping("/verify_otp")
+	public ResponseHandler verifyOtp(@RequestParam String anyValue,@RequestParam String otp) {
+
+		ResponseHandler response = new ResponseHandler();
+
+		try {
+			String verifyOtp = usersService.verifyOtp(anyValue, otp);
+			response.setStatus(true);
+			response.setMessage(" successfully");
+			response.setData(verifyOtp);
+
+		} catch (IllegalArgumentException e) {
+			response.setStatus(false);
+			response.setMessage("Failed" + e.getMessage());
+			response.setData(null);
+		} catch (Exception e) {
+			response.setStatus(false);
+			response.setMessage("Failed" + e.getMessage());
+			response.setData(null);
+		}
+
+		return response;
+
+	}
 
 }
