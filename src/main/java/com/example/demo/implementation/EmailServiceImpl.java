@@ -32,7 +32,7 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.password}")
     private String password;
 
-    @Async("taskExecutor")
+//    @Async("taskExecutor")
     @Override
     public CompletableFuture<String> sendEmailAsync(String to, String subject, String plainText) {
         Properties props = new Properties();

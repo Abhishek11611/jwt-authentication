@@ -4,7 +4,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,29 +11,18 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.AuthenticationRequest;
 import com.example.demo.entity.Users;
+import com.example.demo.events.OtpEmailEvent;
 import com.example.demo.jwt.JwtUtil;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.UsersService;
-
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -49,6 +37,9 @@ public class UsersServiceImpl implements UsersService {
 			
 
 	private static final Logger logger = LoggerFactory.getLogger(UsersServiceImpl.class);
+	
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
 	
 	@Autowired
@@ -119,7 +110,8 @@ public class UsersServiceImpl implements UsersService {
 
 			try {
 				
-			emailService.sendEmailAsync(users2.getUserEmail(), "SuccessFully !!!!!",  otp);
+//			emailService.sendEmailAsync(users2.getUserEmail(), "SuccessFully !!!!!",  otp);
+				eventPublisher.publishEvent(new OtpEmailEvent(this, users2.getUserEmail(), otp));
 				System.out.println(otp);
 					String encrytpotp = encrypt(otp,SECRET_KEY_STRING);	
 					
