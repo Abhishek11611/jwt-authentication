@@ -1,0 +1,17 @@
+docker run -d
+  --name postgres
+  -e POSTGRES_USER=postgres
+  -e POSTGRES_PASSWORD=@Abhishek11611
+  -e POSTGRES_DB=authentication_demo
+  -p 5432:5432
+  postgres:16
+
+
+docker run -d
+  --name authapp-1
+  --link pgdb:pgdb
+  -p 8080:8080
+  jwt-authentication-authapp
+
+
+directly run application command = docker-compose up --build
