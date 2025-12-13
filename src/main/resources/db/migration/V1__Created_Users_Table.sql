@@ -9,3 +9,6 @@ CREATE TABLE user_table (
     otp_expired_at TIMESTAMP,
     user_lock_time TIMESTAMP
 );
+
+
+ -- jwt test branch
