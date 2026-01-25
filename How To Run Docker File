@@ -1,7 +1,11 @@
+Pending = refactor(DockerFile):
+1.Update docker file need to add maven clean command and Changes Base Images
+2.remaining Volume , .env, Mount
+
 docker run -d
   --name postgres
   -e POSTGRES_USER=postgres
-  -e POSTGRES_PASSWORD=@Abhishek11611
+  -e POSTGRES_PASSWORD=*********
   -e POSTGRES_DB=authentication_demo
   -p 5432:5432
   postgres:16
