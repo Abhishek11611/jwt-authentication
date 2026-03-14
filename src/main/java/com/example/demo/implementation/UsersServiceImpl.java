@@ -11,6 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,9 +24,11 @@ import com.example.demo.jwt.JwtUtil;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.UsersService;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsersServiceImpl implements UsersService {
+
 	
 	public static final String SECRET_KEY_STRING = "0123456789abcdef0123456789abcdef"; // 32 chars for AES-256
     private static final String AES_ALGORITHM = "AES";
@@ -34,9 +37,11 @@ public class UsersServiceImpl implements UsersService {
 	String messsage = "The Email OTP method enables you to authenticate using the"
 			+ " one-time password 234090 that is sent to the registered email"
 			+ " address. When you try to authenticate on any device, the server ";
-			
 
-	private static final Logger logger = LoggerFactory.getLogger(UsersServiceImpl.class);
+	@Value("${spring.mail.username}")
+	private String from;
+
+	private static final Logger log = LoggerFactory.getLogger(UsersServiceImpl.class);
 	
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
@@ -57,22 +62,25 @@ public class UsersServiceImpl implements UsersService {
 	@Autowired
 	private EmailService emailService;
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public String register(AuthenticationRequest authenticationRequest) {
-
+		log.info("User registration started");
 		String userName = authenticationRequest.getUserName();
 		String userPassword = authenticationRequest.getUserPassword();
 		Long userMobileNumber = authenticationRequest.getUserMobileNumber();
 		String userEmail = authenticationRequest.getUserEmail();
 
 		if (userName == null || userPassword == null || userMobileNumber == null || userEmail == null) {
+			log.warn("User registration failed due to missing fields");
 			throw new NullPointerException("Please all Fields are Required !!");
 		}
 		boolean existsByUserName = usersRepository.existsByUserName(userName);
 		if (existsByUserName) {
+			log.warn("User registration failed. Username already exists: {}", userName);
 			throw new IllegalArgumentException("Username Already exist !!!");
 		}
-
+		log.debug("Encoding password for user {}", userName);
 		String encode = passwordEncoder.encode(userPassword);
 		Users users = new Users();
 		users.setUserName(userName);
@@ -80,8 +88,9 @@ public class UsersServiceImpl implements UsersService {
 		users.setUserMobileNumber(userMobileNumber + "");
 		users.setUserEmail(userEmail);
 
-		usersRepository.save(users);
-
+		Users save = usersRepository.save(users);
+		emailService.sendEmailAsync(save.getUserEmail(),from,"User Created SuccessFully");
+		log.info("User Added Successfully With Email {}",users.getUserEmail());
 		return "User Added Successfully!!!";
 	}
 
@@ -120,7 +129,7 @@ public class UsersServiceImpl implements UsersService {
 				usersRepository.save(users2);
 				
 				long end = System.currentTimeMillis(); // 🕒 End time
-		        logger.info((end - start) / 1000.0 + " seconds.");
+		        log.info((end - start) / 1000.0 + " seconds.");
 
 
 				
