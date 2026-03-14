@@ -1,10 +1,8 @@
 package com.example.demo.implementation;
 
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.service.EmailService;
@@ -34,7 +32,7 @@ public class EmailServiceImpl implements EmailService {
 
 //    @Async("taskExecutor")
     @Override
-    public CompletableFuture<String> sendEmailAsync(String to, String subject, String plainText) {
+    public void sendEmailAsync(String to, String subject, String plainText) {
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
@@ -63,10 +61,8 @@ public class EmailServiceImpl implements EmailService {
             Transport.send(message);
 
             System.out.println("Email sent to " + to);
-            return CompletableFuture.completedFuture("Email sent");
         } catch (MessagingException e) {
-            e.printStackTrace();
-            return CompletableFuture.completedFuture("Failed to send email: " + e.getMessage());
+            throw new RuntimeException("Email sending failed", e);
         }
     }
 }
